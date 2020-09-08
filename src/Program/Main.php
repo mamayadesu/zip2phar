@@ -212,7 +212,7 @@ class Main
         $phar->stopBuffering();
         if (file_exists($pathToTempFolder . DIRECTORY_SEPARATOR . "autoload.php"))
         {
-            Console::WriteLine("File 'autoload.php' was found! This file be exectued automatically when PHAR-file launched.");
+            Console::WriteLine("File 'autoload.php' was found! This file will be executed automatically on PHAR launch.");
             //$phar->setDefaultStub('autoload.php', 'autoload.php');
             $phar->setStub("<?php Phar::mapPhar(); include 'phar://'.__FILE__.'/autoload.php'; __HALT_COMPILER();");
         }
