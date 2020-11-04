@@ -143,7 +143,7 @@ class Main
         }
         
         $randomFolderName = strtolower($this->randomWord(16));
-        $pathToTempFolder = $this->getDir().$randomFolderName;
+        $pathToTempFolder = $this->getDir() . $randomFolderName;
         
         while (file_exists($pathToTempFolder))
         {
