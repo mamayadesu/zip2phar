@@ -2,18 +2,24 @@
 
 namespace Program;
 
-use \IO\Console;
-use \Application\Application;
+use \BadMethodCallException;
+use Data\String\BackgroundColors;
+use Data\String\ColoredString;
+use Data\String\ForegroundColors;
+use IO\Console;
+use Application\Application;
+use \PharException;
+use \UnexpectedValueException;
 
 class Main
 {
-    
-    private $args;
+    private array $args;
     
     public function __construct(array $args)
     {
         $this->args = $args;
-        Console::Write("*** " . Application::GetName() . " v" . Application::GetVersion() . " by " . Application::GetAuthor() . " ***");
+        //Console::Write("*** " . Application::GetName() . " v" . Application::GetVersion() . " by " . Application::GetAuthor() . " ***");
+        Console::Write(ColoredString::Get("oOoOoOo ", ForegroundColors::DARK_GRAY, BackgroundColors::MAGENTA) . ColoredString::Get(Application::GetName() . " v" . Application::GetVersion() . " by " . Application::GetAuthor(), ForegroundColors::GREEN, BackgroundColors::MAGENTA) . ColoredString::Get(" oOoOoOo", ForegroundColors::DARK_GRAY, BackgroundColors::MAGENTA));
         $this->start();
     }
     
@@ -74,18 +80,43 @@ class Main
         }
         return true;
     }
+
+    private function White(string $str) : void
+    {
+        Console::Write(ColoredString::Get($str, ForegroundColors::WHITE));
+    }
+
+    private function WhiteLine(string $str) : void
+    {
+        Console::WriteLine(ColoredString::Get($str, ForegroundColors::WHITE));
+    }
+
+    private function GreenLine(string $str) : void
+    {
+        Console::WriteLine(ColoredString::Get($str, ForegroundColors::GREEN));
+    }
+
+    private function RedLine(string $str) : void
+    {
+        Console::WriteLine(ColoredString::Get($str, ForegroundColors::RED));
+    }
+
+    private function YellowLine(string $str) : void
+    {
+        Console::WriteLine(ColoredString::Get($str, ForegroundColors::YELLOW));
+    }
     
     private function start() : void
     {
         Console::WriteLine("\n");
         
-        Console::Write("Path to zip: ");
+        $this->White("Path to zip: ");
         if (!isset($this->args[1]) || $this->args[1] == "null")
         {
             $path_to_zip = Console::ReadLine();
             if (empty($path_to_zip))
             {
-                Console::Write("Insert the path to ZIP-file!");
+                $this->RedLine("Put the path to ZIP-file!");
                 unset($this->args[1]);
                 $this->start();
                 exit;
@@ -94,12 +125,12 @@ class Main
         else
         {
             $path_to_zip = str_replace("%20", " ", $this->args[1]);
-            Console::WriteLine($path_to_zip);
+            $this->WhiteLine($path_to_zip);
         }
         
         if (!file_exists($path_to_zip))
         {
-            Console::WriteLine("No ZIP-file '" . $path_to_zip . "' found!");
+            $this->RedLine("No ZIP-file '" . $path_to_zip . "' found!");
             unset($this->args[1]);
             $this->start();
             exit;
@@ -107,19 +138,19 @@ class Main
         
         if (is_dir($path_to_zip))
         {
-            Console::WriteLine("'" . $path_to_zip . "' is a folder!");
+            $this->RedLine("'" . $path_to_zip . "' is a folder!");
             unset($this->args[1]);
             $this->start();
             exit;
         }
-        
-        Console::Write("Path to PHAR: ");
+
+        $this->White("Path to new PHAR: ");
         if (!isset($this->args[2]) || $this->args[2] == "null")
         {
             $path_to_phar = Console::ReadLine();
             if (empty($path_to_phar))
             {
-                Console::Write("Insert the path to PHAR");
+                $this->RedLine("Put the path to PHAR");
                 unset($this->args[1]);
                 $this->start();
                 exit;
@@ -128,7 +159,7 @@ class Main
         else
         {
             $path_to_phar = str_replace("%20", " ", $this->args[2]);
-            Console::WriteLine($path_to_phar);
+            $this->WhiteLine($path_to_phar);
         }
         
         $this->debug("Creating a zip-object.\n");
@@ -136,7 +167,7 @@ class Main
         $this->debug("Trying to open zip '" . $path_to_zip . "'\n");
         if ($zip->open($path_to_zip) != true)
         {
-            Console::Write("Failed to open ZIP-file.\n");
+            $this->RedLine("Failed to open ZIP-file.\n");
             unset($this->args[1]);
             $this->start();
             exit;
@@ -154,16 +185,16 @@ class Main
         $this->debug("Trying to create a temp folder: " . $pathToTempFolder . "\n");
         if (@mkdir($pathToTempFolder) != true)
         {
-            Console::WriteLine("Failed to create temp folder");
+            $this->RedLine("Failed to create temp folder");
             $zip->close();
             $this->start();
             exit;
         }
         $this->debug("Trying to extract files...\n");
-        Console::WriteLine("Converting to phar...");
+        $this->WhiteLine("Converting to phar...");
         if ($zip->extractTo($pathToTempFolder) != true)
         {
-            Console::WriteLine("Failed to extract to temp folder.");
+            $this->RedLine("Failed to extract to temp folder.");
             @rmdir($pathToTempFolder);
             $zip->close();
             $this->start();
@@ -177,7 +208,7 @@ class Main
         }
         catch (UnexpectedValueException $e)
         {
-            Console::WriteLine("Failed to open or create '" . $path_to_phar . "'.");
+            $this->RedLine("Failed to open or create '" . $path_to_phar . "'.");
             unset($this->args[2]);
             @rmdir($pathToTempFolder);
             $zip->close();
@@ -192,7 +223,7 @@ class Main
         }
         catch (PharException $e)
         {
-            Console::WriteLine("Failed to convert (PharException).");
+            $this->RedLine("Failed to convert (PharException).");
             unset($this->args[2]);
             @rmdir($pathToTempFolder);
             $zip->close();
@@ -201,7 +232,7 @@ class Main
         }
         catch (BadMethodCallException $e)
         {
-            Console::WriteLine("Failed to convert (BadMethodCallException).");
+            $this->RedLine("Failed to convert (BadMethodCallException).");
             unset($this->args[2]);
             @rmdir($pathToTempFolder);
             $zip->close();
@@ -212,8 +243,7 @@ class Main
         $phar->stopBuffering();
         if (file_exists($pathToTempFolder . DIRECTORY_SEPARATOR . "autoload.php"))
         {
-            Console::WriteLine("File 'autoload.php' was found! This file will be executed automatically on PHAR launch.");
-            //$phar->setDefaultStub('autoload.php', 'autoload.php');
+            $this->YellowLine("File 'autoload.php' was found! This file will be executed automatically on PHAR run.");
             $phar->setStub("<?php Phar::mapPhar(); include 'phar://'.__FILE__.'/autoload.php'; __HALT_COMPILER();");
         }
         else
@@ -223,7 +253,7 @@ class Main
         $this->removeDir($pathToTempFolder);
         unset($phar);
         $zip->close();
-        Console::WriteLine("Done! Press ENTER to close.");
+        $this->GreenLine("Done! Press ENTER to close.");
         Console::ReadLine();
         exit;
     }

@@ -1,14 +1,11 @@
 {
     "php_version": "7.4",
     "app_name": "zip2phar",
-    "app_version": "1.3",
-    "app_author": "xRef/MamayAdesu",
+    "app_version": "1.4",
+    "app_author": "xRef",
     "app_description": "Converts zip to phar",
+    "main": "\\Program\\Main",
     "namespaces":
-    [
-        
-    ],
-    "priorities":
     [
         
     ]
